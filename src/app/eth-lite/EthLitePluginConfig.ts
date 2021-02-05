@@ -4,6 +4,8 @@ export interface IConfigData {
      * user:pass@host...
      */
     nodeUrl: string;
+
+    jwtStr?: string;
     /**
      * An URI pointing to a data adapter that returns an AuthStore instance
      *
@@ -26,6 +28,10 @@ export class EthLitePluginConfig {
 
     getNodeUrl() {
         return this.data.nodeUrl;
+    }
+
+    getHeader() {
+        return this.data.jwtStr;
     }
 
     getEthSymbol() {

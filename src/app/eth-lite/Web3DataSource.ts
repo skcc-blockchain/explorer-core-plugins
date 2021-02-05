@@ -55,11 +55,31 @@ export class Web3DataSource implements IDataSource {
         // tslint:disable-next-line:no-shadowed-variable
         let HttpProvider = await import("web3-providers").then(( { HttpProvider }) => HttpProvider);
         let nodeUrl = this.config.getNodeUrl();
-        let web3Eth = new Eth(
-            nodeUrl.match(/^https?:\/\/.*:.*@.*/) ?
-                new HttpProvider(nodeUrl, { withCredentials: true }) :
-                nodeUrl
-        );
+        let jwt = this.config.getHeader();
+
+        let web3Eth;
+        if (jwt) {
+            if (nodeUrl.startsWith("http:")) {
+                throw new Error("need https for jwt");
+            }
+
+            let options = {
+                headers: [
+                    { name: "Authorization", value: "Bearer " + jwt },
+                    { name: "withCredentials", value: "true" }]
+            };
+
+            web3Eth = new Eth(
+                new HttpProvider(nodeUrl, options)
+            );
+        } else {
+            web3Eth = new Eth(
+                nodeUrl.match(/^https?:\/\/.*:.*@.*/) ?
+                    new HttpProvider(nodeUrl, { withCredentials: true }) :
+                    nodeUrl
+            );
+        }
+
         this.web3EthApi.setWeb3Eth(web3Eth);
 
         const customAuthStore = depData && depData.get("authStore") as IAuthStore;
